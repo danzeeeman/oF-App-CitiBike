@@ -4,11 +4,13 @@
 void testApp::setup(){
     ofSetVerticalSync(true);
     ofRegisterURLNotification(this);
+    ofSetBackgroundAuto(false);
     url_Stations = "http://appservices.citibikenyc.com/data2/stations.php";
     url_Update = "http://appservices.citibikenyc.com/data2/stations.php?updateOnly=true";
     ofLoadURLAsync(url_Update, "update");
     ofLoadURLAsync(url_Stations, "stations");
     lastUpdate = ofGetElapsedTimef();
+    ofBackground(4, 5, 6);
 }
 
 //--------------------------------------------------------------
@@ -23,6 +25,23 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
+    ofNoFill();
+    //ofBackground(0);
+	
+	ofPushMatrix();
+	ofSetColor(255, 255, 255);
+    for(int i = 0; i < stationIds.size(); i++){
+        
+        ofSetColor(0, 255, 0);
+        ofCircle(ofMap(stationMap[stationIds[i]].lon, -74.024641, -73.856842, 0, ofGetWindowWidth()), ofMap(stationMap[stationIds[i]].lat, 40.933364, 40.598450, 0, ofGetWindowHeight()), stationMap[stationIds[i]].currentCount*.2);
+        ofSetColor(255, 0, 0);
+        ofCircle(ofMap(stationMap[stationIds[i]].lon, -74.024641, -73.856842, 0, ofGetWindowWidth()), ofMap(stationMap[stationIds[i]].lat, 40.933364, 40.598450, 0, ofGetWindowHeight()), stationMap[stationIds[i]].currentSlot*.2);
+    }
+    
+    ofPopMatrix();
+    
+    
+    
     
 }
 
@@ -71,8 +90,10 @@ void testApp::parseUpdates(string json){
         ofxJSONElement data = updates["results"];
         for(int i = 0; i < data.size(); i++){
             station & foo = stationMap[data[i]["id"].asInt()];
-            foo.bikeCount = data[i]["availableBikes"].asInt();
-            foo.slotCount = data[i]["availableDocks"].asInt();
+            foo.bikeCount.push_back(data[i]["availableBikes"].asInt());
+            foo.slotCount.push_back(data[i]["availableDocks"].asInt());
+            foo.currentCount = data[i]["availableBikes"].asInt();
+            foo.currentSlot = data[i]["availableDocks"].asInt();
         }
     }else{
         

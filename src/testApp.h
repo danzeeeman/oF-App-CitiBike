@@ -13,8 +13,10 @@ public:
         float lon;
         float lat;
         int name;
-        int bikeCount;
-        int slotCount;
+        vector<int> bikeCount;
+        vector<int> slotCount;
+        int currentCount;
+        int currentSlot;
     };
     
     struct bikeEvent{
