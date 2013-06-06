@@ -2,7 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxJSONElement.h"
-
+#include "ofxXmlSettings.h"
 
 class testApp : public ofBaseApp{
     
@@ -29,7 +29,7 @@ public:
     void setup();
     void update();
     void draw();
-    
+    void exit();
     void keyPressed  (int key);
     void keyReleased(int key);
     void mouseMoved(int x, int y );
@@ -56,6 +56,11 @@ public:
     ofxJSONElement stations;
     ofxJSONElement updates;
 
+    
+    ofxXmlSettings log;
+    
+    string filename;
+    
     map<int, station> stationMap;
     map<string, bikeEvent> eventMap;
     vector<int> stationIds;

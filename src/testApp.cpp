@@ -34,7 +34,8 @@ void testApp::setup(){
     //ofSetBackgroundAuto(false);
     url_Stations = "http://appservices.citibikenyc.com/data2/stations.php";
     url_Update = "http://appservices.citibikenyc.com/data2/stations.php?updateOnly=true";
-    ofLoadURLAsync(url_Update, "update");
+    filename = "bike-log"+ofToString(ofGetSystemTime())+".xml";
+    //ofLoadURLAsync(url_Update, "update");
     ofLoadURLAsync(url_Stations, "stations");
     lastUpdate = ofGetElapsedTimef();
     ofBackground(4, 5, 6);
@@ -43,7 +44,7 @@ void testApp::setup(){
     mapWidth = ofGetWindowWidth();
     mapHeight = ofGetWindowHeight();
     
-    mapLonLeft = -74.2;
+    mapLonLeft = -74.10;
     mapLonRight = -73.7;
     mapLonDelta = mapLonRight - mapLonLeft;
     
@@ -52,6 +53,8 @@ void testApp::setup(){
     mapLatBottom = 40.6;
     mapLatTop = 40.8;
     mapLatBottomDegree = mapLatBottom * PI/180;
+    
+    log.loadFile(ofToDataPath("bike-log"+ofToString(ofGetSystemTime())+".xml"));
 
 }
 
@@ -75,7 +78,9 @@ void testApp::draw(){
     ofNoFill();
     //ofBackground(0);
 
-	ofSetColor(255, 255, 255);
+	//ofSetColor(255, 255, 255);
+    ofPushMatrix();
+    ofScale(1.25, 1.25);
     for(int i = 0; i < stationIds.size(); i++){
 //        
 //        float x = (stationMap[stationIds[i]].lon - mapLonLeft) * (mapWidth / mapLonDelta);
@@ -95,6 +100,7 @@ void testApp::draw(){
         ofSetColor(255, 0, 0);
         ofCircle(x, y, stationMap[stationIds[i]].currentSlot*.1);
     }
+    ofPopMatrix();
 }
 
 void testApp::urlResponse(ofHttpResponse & response){
@@ -121,9 +127,15 @@ void testApp::parseStations(string json){
             foo.lon = row["longitude"].asDouble();
             foo.lat = row["latitude"].asDouble();
             
-            cout<<foo.name<<endl;
-            cout<<foo.lat<<endl;
-            cout<<foo.lon<<endl;
+//            cout<<foo.name<<endl;
+//            cout<<foo.lat<<endl;
+//            cout<<foo.lon<<endl;
+            
+            log.addTag(ofToString(foo.name));
+            log.pushTag(ofToString(foo.name));
+            log.addValue("lon", ofToString(foo.lon));
+            log.addValue("lat", ofToString(foo.lat));
+            log.popTag();
             
             stationMap[foo.name] = foo;
             
@@ -142,20 +154,32 @@ void testApp::parseUpdates(string json){
         ofxJSONElement data = updates["results"];
         for(int i = 0; i < data.size(); i++){
             station & foo = stationMap[data[i]["id"].asInt()];
-            foo.bikeCount.push_back(data[i]["availableBikes"].asInt());
-            foo.slotCount.push_back(data[i]["availableDocks"].asInt());
-            
+            //foo.bikeCount.push_back(data[i]["availableBikes"].asInt());
+            //foo.slotCount.push_back(data[i]["availableDocks"].asInt());
             
             foo.currentCount = data[i]["availableBikes"].asInt();
             foo.currentSlot = data[i]["availableDocks"].asInt();
+            
+            string time = ofToString(ofGetSystemTime());
+            
+            log.pushTag(ofToString(foo.name));
+            log.addTag(time);
+            log.pushTag(time);
+            log.addValue("availableBikes", foo.currentCount);
+            log.addValue("availableDocks", foo.currentSlot);
+            log.popTag();
+            log.popTag();
+            
         }
-        cout<<"update Stations"<<endl;
+        //cout<<"update Stations"<<endl;
     }else{
         cout<<"update failed"<<endl;
     }
 }
 
-
+void testApp::exit(){
+    log.saveFile(filename);
+}
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
