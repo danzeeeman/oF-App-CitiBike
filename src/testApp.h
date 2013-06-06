@@ -42,9 +42,16 @@ public:
     void urlResponse(ofHttpResponse & response);
     void parseUpdates(string json);
     void parseStations(string stations);
+    void geoToPixel(float lat, float lon);
 
     string url_Stations;
     string url_Update;
+    
+    float mapLonLeft, mapLonRight, mapLonDelta;
+    float mapLatTop, mapLatBottom, mapLatBottomDegree;
+    float scaleX, scaleY;
+    
+    int mapWidth, mapHeight;
 
     ofxJSONElement stations;
     ofxJSONElement updates;
